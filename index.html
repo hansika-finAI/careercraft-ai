@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerCraft AI — LinkedIn Bio & Resume Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: #2a2a3a;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --gold: #f5c842;
+    --text: #f0eff8;
+    --muted: #7b7a96;
+    --success: #4ade80;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND MESH ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(108,99,255,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 30% at 80% 80%, rgba(255,101,132,0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAVBAR ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 40px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .usage-badge {
+    font-size: 12px; padding: 5px 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 20px; color: var(--muted);
+  }
+  .usage-badge span { color: var(--gold); font-weight: 600; }
+  .upgrade-nav {
+    padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    background: linear-gradient(135deg, var(--accent), #9b8fff);
+    color: white; border: none; cursor: pointer; transition: opacity 0.2s;
+  }
+  .upgrade-nav:hover { opacity: 0.85; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative; z-index: 1;
+    text-align: center; padding: 80px 24px 60px;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3);
+    border-radius: 20px; padding: 6px 16px; font-size: 12px; font-weight: 500;
+    color: #a09fff; margin-bottom: 24px;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 900; line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  .hero-sub {
+    font-size: 17px; color: var(--muted); max-width: 520px; margin: 0 auto 40px;
+    line-height: 1.6;
+  }
+  .tool-tabs {
+    display: inline-flex; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 4px; gap: 4px; margin-bottom: 48px;
+  }
+  .tab-btn {
+    padding: 10px 28px; border-radius: 9px; font-size: 14px; font-weight: 500;
+    border: none; cursor: pointer; transition: all 0.2s;
+    background: transparent; color: var(--muted);
+  }
+  .tab-btn.active {
+    background: var(--accent); color: white;
+    box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+  }
+
+  /* ── TOOLS ── */
+  .tool-container { display: none; }
+  .tool-container.active { display: block; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px; position: relative; z-index: 1;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 20px;
+  }
+
+  /* ── FORM ── */
+  .main-layout {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px; max-width: 1100px; margin: 0 auto;
+    padding: 0 24px 60px; position: relative; z-index: 1;
+  }
+  @media(max-width:768px){ .main-layout { grid-template-columns: 1fr; } }
+
+  label {
+    display: block; font-size: 13px; font-weight: 500;
+    color: var(--muted); margin-bottom: 7px;
+  }
+  input, textarea, select {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 11px 14px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    transition: border-color 0.2s; resize: vertical; outline: none;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  textarea { min-height: 90px; }
+  .field { margin-bottom: 16px; }
+
+  .generate-btn {
+    width: 100%; padding: 14px; border-radius: 11px;
+    font-size: 15px; font-weight: 600; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--accent) 0%, #9b8fff 100%);
+    color: white; transition: all 0.2s; margin-top: 8px;
+    box-shadow: 0 4px 24px rgba(108,99,255,0.35);
+  }
+  .generate-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(108,99,255,0.5); }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* ── OUTPUT ── */
+  .output-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 11px; padding: 18px; min-height: 160px;
+    font-size: 14px; line-height: 1.75; color: var(--text);
+    white-space: pre-wrap; position: relative;
+  }
+  .output-placeholder {
+    color: var(--muted); font-style: italic; font-size: 14px;
+  }
+  .output-actions {
+    display: flex; gap: 10px; margin-top: 14px;
+  }
+  .copy-btn, .download-btn {
+    flex: 1; padding: 10px; border-radius: 9px; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text);
+  }
+  .copy-btn:hover, .download-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .loading-dots { display: inline-flex; gap: 5px; align-items: center; }
+  .loading-dots span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); animation: bounce 1.2s infinite;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-8px)} }
+
+  /* ── PAYWALL OVERLAY ── */
+  .paywall-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(5,5,10,0.92); backdrop-filter: blur(10px);
+    z-index: 200; align-items: center; justify-content: center; padding: 24px;
+  }
+  .paywall-overlay.show { display: flex; }
+  .paywall-modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 40px; max-width: 560px; width: 100%;
+    text-align: center; position: relative;
+  }
+  .paywall-close {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none; color: var(--muted);
+    font-size: 22px; cursor: pointer; line-height: 1;
+  }
+  .paywall-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; margin: 0 auto 20px;
+  }
+  .paywall-modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; margin-bottom: 10px;
+  }
+  .paywall-modal p { color: var(--muted); font-size: 15px; margin-bottom: 32px; line-height: 1.6; }
+
+  .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+  .plan {
+    border: 1px solid var(--border); border-radius: 14px; padding: 20px;
+    cursor: pointer; transition: all 0.2s; text-align: left; position: relative;
+    background: var(--surface2);
+  }
+  .plan:hover { border-color: var(--accent); }
+  .plan.popular { border-color: var(--accent); background: rgba(108,99,255,0.08); }
+  .popular-tag {
+    position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: white; font-size: 11px; font-weight: 600;
+    padding: 3px 12px; border-radius: 10px; white-space: nowrap;
+  }
+  .plan-name { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .plan-price { font-size: 26px; font-weight: 700; color: var(--text); }
+  .plan-price sup { font-size: 14px; vertical-align: top; margin-top: 6px; display: inline-block; }
+  .plan-price span { font-size: 13px; color: var(--muted); font-weight: 400; }
+  .plan-features { margin-top: 12px; font-size: 13px; color: var(--muted); line-height: 1.8; }
+  .plan-features li { list-style: none; padding-left: 18px; position: relative; }
+  .plan-features li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: 700; }
+
+  .pay-btn {
+    width: 100%; padding: 15px; border-radius: 11px; font-size: 15px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), #9b8fff); color: white;
+    border: none; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 24px rgba(108,99,255,0.4);
+  }
+  .pay-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 32px rgba(108,99,255,0.55); }
+  .pay-methods {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-top: 14px; color: var(--muted); font-size: 12px;
+  }
+  .pay-chip {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 9px; font-size: 11px; font-weight: 600; color: var(--muted);
+  }
+
+  /* ── SUCCESS TOAST ── */
+  .toast {
+    position: fixed; bottom: 30px; right: 30px; z-index: 300;
+    background: var(--success); color: #052e10;
+    padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 14px;
+    transform: translateY(100px); opacity: 0; transition: all 0.3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── FEATURES SECTION ── */
+  .features {
+    max-width: 1100px; margin: 0 auto 80px; padding: 0 24px;
+    position: relative; z-index: 1;
+  }
+  .features-title {
+    text-align: center; font-family: 'Playfair Display', serif;
+    font-size: 28px; margin-bottom: 32px; color: var(--muted);
+  }
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media(max-width:600px){ .features-grid { grid-template-columns: 1fr; } }
+  .feature-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px;
+  }
+  .feature-icon { font-size: 24px; margin-bottom: 10px; }
+  .feature-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 7px; }
+  .feature-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 30px;
+    border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 13px;
+    position: relative; z-index: 1;
+  }
+
+  /* ── RESUME SPECIFIC ── */
+  .resume-preview {
+    background: white; color: #111; border-radius: 11px;
+    padding: 28px; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; line-height: 1.6; min-height: 200px;
+    white-space: pre-wrap;
+  }
+  .resume-preview h2 { color: #6c63ff; border-bottom: 2px solid #6c63ff; padding-bottom: 4px; margin-bottom: 12px; }
+  .section-divider { border: none; border-top: 1px solid #e0e0f0; margin: 12px 0; }
+
+  /* ── CHAR COUNT ── */
+  .char-count { font-size: 11px; color: var(--muted); text-align: right; margin-top: 4px; }
+  .char-count.warn { color: #f5c842; }
+  .char-count.over { color: #ff6584; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">CareerCraft AI</div>
+  <div class="nav-right">
+    <div class="usage-badge">Free uses left: <span id="usageCount">3</span></div>
+    <button class="upgrade-nav" onclick="showPaywall()">Upgrade ✦</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">
+    <div class="dot"></div>
+    AI-powered career tools for Indian professionals
+  </div>
+  <h1>Write your <em>story</em>,<br>land your dream job</h1>
+  <p class="hero-sub">Generate a professional LinkedIn bio or ATS-ready resume in under 30 seconds using AI. Built for freshers and job seekers.</p>
+
+  <div class="tool-tabs">
+    <button class="tab-btn active" onclick="switchTool('linkedin')">✦ LinkedIn Bio</button>
+    <button class="tab-btn" onclick="switchTool('resume')">✦ Resume Builder</button>
+  </div>
+</div>
+
+<!-- ════ LINKEDIN BIO TOOL ════ -->
+<div class="tool-container active" id="tool-linkedin">
+  <div class="main-layout">
+    <!-- INPUT -->
+    <div class="card">
+      <div class="card-title">Your Details</div>
+
+      <div class="field">
+        <label>Your Name</label>
+        <input type="text" id="li-name" placeholder="e.g. Priya Sharma">
+      </div>
+      <div class="field">
+        <label>Current Role / Target Role</label>
+        <input type="text" id="li-role" placeholder="e.g. Software Engineer / Fresher in Marketing">
+      </div>
+      <div class="field">
+        <label>Skills (comma separated)</label>
+        <input type="text" id="li-skills" placeholder="e.g. Python, Data Analysis, SQL, Power BI">
+      </div>
+      <div class="field">
+        <label>Education</label>
+        <input type="text" id="li-edu" placeholder="e.g. B.Tech CSE, IIT Roorkee, 2024">
+      </div>
+      <div class="field">
+        <label>Achievements / Projects (optional)</label>
+        <textarea id="li-achievements" placeholder="e.g. Built a sales dashboard that reduced reporting time by 40%. Internship at Infosys."></textarea>
+      </div>
+      <div class="field">
+        <label>Tone</label>
+        <select id="li-tone">
+          <option value="professional">Professional & Formal</option>
+          <option value="friendly">Friendly & Approachable</option>
+          <option value="bold">Bold & Ambitious</option>
+          <option value="creative">Creative & Unique</option>
+        </select>
+      </div>
+
+      <button class="generate-btn" id="li-gen-btn" onclick="generateLinkedIn()">
+        Generate LinkedIn Bio ✦
+      </button>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="card">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>Your LinkedIn Bio</span>
+        <span id="li-char-count" class="char-count"></span>
+      </div>
+      <div class="output-box" id="li-output">
+        <span class="output-placeholder">Your LinkedIn bio will appear here. Fill the form and click Generate.</span>
+      </div>
+      <div class="output-actions">
+        <button class="copy-btn" onclick="copyOutput('li-output')">Copy Bio</button>
+        <button class="download-btn" onclick="downloadText('li-output', 'linkedin-bio.txt')">Download .txt</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ RESUME TOOL ════ -->
+<div class="tool-container" id="tool-resume">
+  <div class="main-layout">
+    <!-- INPUT -->
+    <div class="card">
+      <div class="card-title">Resume Details</div>
+
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="re-name" placeholder="e.g. Rahul Verma">
+      </div>
+      <div class="field">
+        <label>Email & Phone</label>
+        <input type="text" id="re-contact" placeholder="e.g. rahul@email.com | +91 98765 43210">
+      </div>
+      <div class="field">
+        <label>Target Job Role</label>
+        <input type="text" id="re-role" placeholder="e.g. Junior Data Analyst, Marketing Executive">
+      </div>
+      <div class="field">
+        <label>Education</label>
+        <textarea id="re-edu" placeholder="e.g. B.Com (Hons), Delhi University, 2024, CGPA 8.2&#10;12th, St. Xavier's School, 2020, 91%"></textarea>
+      </div>
+      <div class="field">
+        <label>Skills</label>
+        <input type="text" id="re-skills" placeholder="e.g. MS Excel, Tally, GST Filing, Canva, Communication">
+      </div>
+      <div class="field">
+        <label>Internships / Projects</label>
+        <textarea id="re-exp" placeholder="e.g. Marketing Intern at Zomato (2 months) — ran social campaigns reaching 10k users&#10;Final year project: E-commerce website using React"></textarea>
+      </div>
+      <div class="field">
+        <label>Certifications / Extras (optional)</label>
+        <input type="text" id="re-certs" placeholder="e.g. Google Analytics, HubSpot, NSS Volunteer">
+      </div>
+
+      <button class="generate-btn" id="re-gen-btn" onclick="generateResume()">
+        Generate Resume ✦
+      </button>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="card">
+      <div class="card-title">Your AI Resume</div>
+      <div class="output-box" id="re-output">
+        <span class="output-placeholder">Your formatted resume will appear here. ATS-friendly, professional, ready to send.</span>
+      </div>
+      <div class="output-actions">
+        <button class="copy-btn" onclick="copyOutput('re-output')">Copy Resume</button>
+        <button class="download-btn" onclick="downloadText('re-output', 'my-resume.txt')">Download .txt</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ FEATURES ════ -->
+<div class="features">
+  <div class="features-title">Why freshers love CareerCraft</div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Ready in 30 seconds</h3>
+      <p>No more staring at a blank page. AI writes a draft instantly — you just edit and customise.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <h3>ATS-optimised</h3>
+      <p>Resumes are structured to pass Applicant Tracking Systems used by TCS, Wipro, Infosys and more.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🇮🇳</div>
+      <h3>Built for India</h3>
+      <p>Understands Indian job market, B.Tech / B.Com / BBA freshers, and Indian recruiter expectations.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════ PAYWALL MODAL ════ -->
+<div class="paywall-overlay" id="paywallOverlay">
+  <div class="paywall-modal">
+    <button class="paywall-close" onclick="hidePaywall()">×</button>
+    <div class="paywall-icon">✦</div>
+    <h2>You've used your 3 free tries</h2>
+    <p>Upgrade to Pro for unlimited LinkedIn bios, resumes, custom tones, PDF downloads, and priority generation.</p>
+
+    <div class="plans">
+      <div class="plan" id="plan-basic" onclick="selectPlan('basic')">
+        <div class="plan-name">Basic</div>
+        <div class="plan-price"><sup>₹</sup>199<span>/mo</span></div>
+        <ul class="plan-features" style="margin-top:12px">
+          <li>Unlimited generations</li>
+          <li>LinkedIn Bio</li>
+          <li>Resume Builder</li>
+          <li>Copy & Download</li>
+        </ul>
+      </div>
+      <div class="plan popular" id="plan-pro" onclick="selectPlan('pro')">
+        <div class="popular-tag">Most Popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price"><sup>₹</sup>499<span>/mo</span></div>
+        <ul class="plan-features" style="margin-top:12px">
+          <li>Everything in Basic</li>
+          <li>PDF downloads</li>
+          <li>5 tone variations</li>
+          <li>Cover letter (soon)</li>
+        </ul>
+      </div>
+    </div>
+
+    <button class="pay-btn" onclick="handlePayment()">
+      Pay with Razorpay →
+    </button>
+    <div class="pay-methods">
+      Secure payment via
+      <span class="pay-chip">UPI</span>
+      <span class="pay-chip">Cards</span>
+      <span class="pay-chip">NetBanking</span>
+      <span class="pay-chip">EMI</span>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<footer>
+  © 2025 CareerCraft AI · Made in India 🇮🇳 · <a href="#" style="color:var(--muted)">Privacy</a> · <a href="#" style="color:var(--muted)">Terms</a>
+</footer>
+
+<script>
+// ══════════════════════════════
+//  STATE
+// ══════════════════════════════
+const MAX_FREE = 3;
+let usedCount = parseInt(localStorage.getItem('cc_used') || '0');
+let isPro = localStorage.getItem('cc_pro') === 'true';
+let selectedPlan = 'pro';
+
+function updateUsageBadge() {
+  const left = isPro ? '∞' : Math.max(0, MAX_FREE - usedCount);
+  document.getElementById('usageCount').textContent = left;
+}
+updateUsageBadge();
+
+// ══════════════════════════════
+//  TAB SWITCHING
+// ══════════════════════════════
+function switchTool(tool) {
+  document.querySelectorAll('.tool-container').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tool-' + tool).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ══════════════════════════════
+//  USAGE GATE
+// ══════════════════════════════
+function checkUsage() {
+  if (isPro) return true;
+  if (usedCount >= MAX_FREE) {
+    showPaywall();
+    return false;
+  }
+  usedCount++;
+  localStorage.setItem('cc_used', usedCount);
+  updateUsageBadge();
+  return true;
+}
+
+// ══════════════════════════════
+//  GENERATE LINKEDIN BIO
+// ══════════════════════════════
+async function generateLinkedIn() {
+  if (!checkUsage()) return;
+
+  const name = document.getElementById('li-name').value.trim();
+  const role = document.getElementById('li-role').value.trim();
+  const skills = document.getElementById('li-skills').value.trim();
+  const edu = document.getElementById('li-edu').value.trim();
+  const achievements = document.getElementById('li-achievements').value.trim();
+  const tone = document.getElementById('li-tone').value;
+
+  if (!name || !role) {
+    showToast('Please enter your name and role.', true);
+    return;
+  }
+
+  const btn = document.getElementById('li-gen-btn');
+  const output = document.getElementById('li-output');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+  output.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+
+  const toneInstructions = {
+    professional: 'Write in a formal, polished, third-person style suitable for corporate roles.',
+    friendly: 'Write in first person, warm and approachable, like a friendly professional.',
+    bold: 'Write boldly and ambitiously in first person, showing drive and hunger for growth.',
+    creative: 'Write creatively and uniquely, stand out from generic LinkedIn bios.'
+  };
+
+  const prompt = `You are a professional LinkedIn bio writer. Write a compelling LinkedIn "About" section for the following person.
+
+Name: ${name}
+Role: ${role}
+Skills: ${skills || 'Not specified'}
+Education: ${edu || 'Not specified'}
+Achievements/Projects: ${achievements || 'None provided'}
+Tone: ${toneInstructions[tone]}
+
+Guidelines:
+- 150–220 words
+- Include a hook opening line
+- Mention skills and what value they bring
+- Add education briefly
+- End with a call-to-action (open to opportunities, collaborations, etc.)
+- Keep it genuine and not overly salesy
+- Optimise for LinkedIn search with relevant keywords
+- Do NOT use bullet points inside the bio — write in flowing paragraphs
+
+Write only the bio text, nothing else.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'Could not generate. Please try again.';
+    output.textContent = text;
+
+    const count = text.length;
+    const cc = document.getElementById('li-char-count');
+    cc.textContent = count + ' chars';
+    cc.className = 'char-count' + (count > 2600 ? ' over' : count > 2200 ? ' warn' : '');
+  } catch(e) {
+    output.textContent = 'Error: Could not connect to AI. Please check your connection and try again.';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Generate LinkedIn Bio ✦';
+}
+
+// ══════════════════════════════
+//  GENERATE RESUME
+// ══════════════════════════════
+async function generateResume() {
+  if (!checkUsage()) return;
+
+  const name = document.getElementById('re-name').value.trim();
+  const contact = document.getElementById('re-contact').value.trim();
+  const role = document.getElementById('re-role').value.trim();
+  const edu = document.getElementById('re-edu').value.trim();
+  const skills = document.getElementById('re-skills').value.trim();
+  const exp = document.getElementById('re-exp').value.trim();
+  const certs = document.getElementById('re-certs').value.trim();
+
+  if (!name || !role) {
+    showToast('Please enter your name and target role.', true);
+    return;
+  }
+
+  const btn = document.getElementById('re-gen-btn');
+  const output = document.getElementById('re-output');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+  output.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+
+  const prompt = `You are an expert resume writer for Indian freshers. Create a clean, ATS-friendly resume.
+
+Name: ${name}
+Contact: ${contact || 'Not provided'}
+Target Role: ${role}
+Education: ${edu || 'Not provided'}
+Skills: ${skills || 'Not provided'}
+Internships/Projects: ${exp || 'None'}
+Certifications/Extras: ${certs || 'None'}
+
+Format the resume as plain text with clear sections. Use this exact structure:
+
+[FULL NAME]
+[Contact Info] | [LinkedIn placeholder] | [City, India]
+
+─────────────────────────────
+OBJECTIVE
+─────────────────────────────
+[2-3 sentence career objective tailored to the target role]
+
+─────────────────────────────
+EDUCATION
+─────────────────────────────
+[Format each degree clearly with institution, year, grade]
+
+─────────────────────────────
+SKILLS
+─────────────────────────────
+[Group skills into Technical Skills and Soft Skills]
+
+─────────────────────────────
+EXPERIENCE & PROJECTS
+─────────────────────────────
+[Format internships/projects with bullet points showing impact]
+
+─────────────────────────────
+CERTIFICATIONS & ACHIEVEMENTS
+─────────────────────────────
+[List certifications and notable achievements]
+
+─────────────────────────────
+EXTRACURRICULARS
+─────────────────────────────
+[Only if relevant info was provided]
+
+Make it ATS-optimised with relevant keywords for ${role}. Write only the resume, nothing else.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'Could not generate. Please try again.';
+    output.textContent = text;
+  } catch(e) {
+    output.textContent = 'Error: Could not connect to AI. Please check your connection and try again.';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Generate Resume ✦';
+}
+
+// ══════════════════════════════
+//  COPY & DOWNLOAD
+// ══════════════════════════════
+function copyOutput(id) {
+  const text = document.getElementById(id).textContent;
+  if (!text || text.includes('will appear here')) { showToast('Generate something first!', true); return; }
+  navigator.clipboard.writeText(text);
+  showToast('Copied to clipboard!');
+}
+
+function downloadText(id, filename) {
+  const text = document.getElementById(id).textContent;
+  if (!text || text.includes('will appear here')) { showToast('Generate something first!', true); return; }
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+// ══════════════════════════════
+//  PAYWALL
+// ══════════════════════════════
+function showPaywall() {
+  document.getElementById('paywallOverlay').classList.add('show');
+}
+function hidePaywall() {
+  document.getElementById('paywallOverlay').classList.remove('show');
+}
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.querySelectorAll('.plan').forEach(p => p.style.borderColor = '');
+  document.getElementById('plan-' + plan).style.borderColor = 'var(--accent)';
+}
+
+function handlePayment() {
+  // In production: integrate Razorpay SDK here
+  // For demo: simulate successful payment
+  const price = selectedPlan === 'pro' ? '₹499' : '₹199';
+  showToast(`Redirecting to Razorpay for ${price}/mo...`);
+  setTimeout(() => {
+    // Simulate payment success
+    isPro = true;
+    localStorage.setItem('cc_pro', 'true');
+    document.getElementById('usageCount').textContent = '∞';
+    hidePaywall();
+    showToast('Payment successful! You now have unlimited access.');
+  }, 2000);
+}
+
+// ══════════════════════════════
+//  TOAST
+// ══════════════════════════════
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isError ? 'var(--accent2)' : 'var(--success)';
+  t.style.color = isError ? 'white' : '#052e10';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ══════════════════════════════
+//  CLOSE PAYWALL ON OUTSIDE CLICK
+// ══════════════════════════════
+document.getElementById('paywallOverlay').addEventListener('click', function(e) {
+  if (e.target === this) hidePaywall();
+});
+</script>
+</body>
+</html>
