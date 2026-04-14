@@ -680,122 +680,109 @@ OBJECTIVE
 ─────────────────────────────
 [2-3 sentence career objective tailored to the target role]
 
-─────────────────────────────
-EDUCATION
-─────────────────────────────
-[Format each degree clearly with institution, year, grade]
-
-─────────────────────────────
-SKILLS
-─────────────────────────────
-[Group skills into Technical Skills and Soft Skills]
-
-─────────────────────────────
-EXPERIENCE & PROJECTS
-─────────────────────────────
-[Format internships/projects with bullet points showing impact]
-
-─────────────────────────────
-CERTIFICATIONS & ACHIEVEMENTS
-─────────────────────────────
-[List certifications and notable achievements]
-
-─────────────────────────────
-EXTRACURRICULARS
-─────────────────────────────
-[Only if relevant info was provided]
-
-Make it ATS-optimised with relevant keywords for ${role}. Write only the resume, nothing else.`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await res.json();
-    const text = data.content?.[0]?.text || 'Could not generate. Please try again.';
-    output.textContent = text;
-  } catch(e) {
-    output.textContent = 'Error: Could not connect to AI. Please check your connection and try again.';
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = 'Generate Resume ✦';
-}
-
-// ══════════════════════════════
-//  COPY & DOWNLOAD
-// ══════════════════════════════
-function copyOutput(id) {
-  const text = document.getElementById(id).textContent;
-  if (!text || text.includes('will appear here')) { showToast('Generate something first!', true); return; }
-  navigator.clipboard.writeText(text);
-  showToast('Copied to clipboard!');
-}
-
-function downloadText(id, filename) {
-  const text = document.getElementById(id).textContent;
-  if (!text || text.includes('will appear here')) { showToast('Generate something first!', true); return; }
-  const blob = new Blob([text], { type: 'text/plain' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-}
-
-// ══════════════════════════════
-//  PAYWALL
-// ══════════════════════════════
-function showPaywall() {
-  document.getElementById('paywallOverlay').classList.add('show');
-}
-function hidePaywall() {
-  document.getElementById('paywallOverlay').classList.remove('show');
-}
-function selectPlan(plan) {
-  selectedPlan = plan;
-  document.querySelectorAll('.plan').forEach(p => p.style.borderColor = '');
-  document.getElementById('plan-' + plan).style.borderColor = 'var(--accent)';
-}
-
-function handlePayment() {
-  // In production: integrate Razorpay SDK here
-  // For demo: simulate successful payment
-  const price = selectedPlan === 'pro' ? '₹499' : '₹199';
-  showToast(`Redirecting to Razorpay for ${price}/mo...`);
-  setTimeout(() => {
-    // Simulate payment success
-    isPro = true;
-    localStorage.setItem('cc_pro', 'true');
-    document.getElementById('usageCount').textContent = '∞';
-    hidePaywall();
-    showToast('Payment successful! You now have unlimited access.');
-  }, 2000);
-}
-
-// ══════════════════════════════
-//  TOAST
-// ══════════════════════════════
-function showToast(msg, isError = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = isError ? 'var(--accent2)' : 'var(--success)';
-  t.style.color = isError ? 'white' : '#052e10';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// ══════════════════════════════
-//  CLOSE PAYWALL ON OUTSIDE CLICK
-// ══════════════════════════════
-document.getElementById('paywallOverlay').addEventListener('click', function(e) {
-  if (e.target === this) hidePaywall();
-});
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CareerCraft AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;--border:#2a2a3a;--accent:#6c63ff;--accent2:#ff6584;--gold:#f5c842;--text:#f0eff8;--muted:#7b7a96;--success:#4ade80;--radius:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:16px 40px;background:rgba(10,10,15,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;background:linear-gradient(135deg,#6c63ff,#ff6584);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-right{display:flex;align-items:center;gap:10px}
+.usage-badge{font-size:12px;padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;color:var(--muted)}
+.usage-badge span{color:var(--gold);font-weight:600}
+.upgrade-nav{padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#6c63ff,#9b8fff);color:white;border:none;cursor:pointer}
+.hero{text-align:center;padding:70px 24px 50px;position:relative;z-index:1}
+h1{font-family:'Playfair Display',serif;font-size:clamp(30px,5vw,56px);font-weight:900;line-height:1.1;margin-bottom:18px}
+h1 em{font-style:italic;color:var(--accent)}
+.hero-sub{font-size:16px;color:var(--muted);max-width:500px;margin:0 auto 36px}
+.tool-tabs{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;gap:4px;margin-bottom:40px}
+.tab-btn{padding:10px 24px;border-radius:9px;font-size:14px;font-weight:500;border:none;cursor:pointer;background:transparent;color:var(--muted)}
+.tab-btn.active{background:var(--accent);color:white}
+.tool-container{display:none}.tool-container.active{display:block}
+.main-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1080px;margin:0 auto;padding:0 20px 60px;position:relative;z-index:1}
+@media(max-width:768px){.main-layout{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
+.card-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:18px}
+label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
+input,textarea,select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;resize:vertical;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{min-height:80px}.field{margin-bottom:14px}
+.generate-btn{width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:600;border:none;cursor:pointer;margin-top:6px;background:linear-gradient(135deg,#6c63ff,#9b8fff);color:white;transition:all .2s}
+.generate-btn:disabled{opacity:.5;cursor:not-allowed}
+.output-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;min-height:150px;font-size:14px;line-height:1.75;color:var(--text);white-space:pre-wrap}
+.output-placeholder{color:var(--muted);font-style:italic}
+.output-actions{display:flex;gap:10px;margin-top:12px}
+.copy-btn,.download-btn{flex:1;padding:10px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text)}
+.copy-btn:hover,.download-btn:hover{border-color:var(--accent);color:var(--accent)}
+.loading-dots{display:inline-flex;gap:5px;align-items:center}
+.loading-dots span{width:7px;height:7px;border-radius:50%;background:white;animation:bounce 1.2s infinite}
+.loading-dots span:nth-child(2){animation-delay:.2s}.loading-dots span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-7px)}}
+.paywall-overlay{display:none;position:fixed;inset:0;background:rgba(5,5,10,.92);z-index:200;align-items:center;justify-content:center;padding:20px}
+.paywall-overlay.show{display:flex}
+.paywall-modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px 32px;max-width:540px;width:100%;text-align:center;position:relative}
+.paywall-close{position:absolute;top:14px;right:18px;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer}
+.paywall-modal h2{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:10px}
+.paywall-modal p{color:var(--muted);font-size:14px;margin-bottom:28px}
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}
+.plan{border:1px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;text-align:left;position:relative;background:var(--surface2)}
+.plan.popular{border-color:var(--accent)}
+.popular-tag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent);color:white;font-size:11px;font-weight:600;padding:2px 12px;border-radius:10px;white-space:nowrap}
+.plan-name{font-size:12px;color:var(--muted);margin-bottom:5px}
+.plan-price{font-size:24px;font-weight:700}
+.plan-price sup{font-size:13px;vertical-align:top;margin-top:5px;display:inline-block}
+.plan-price span{font-size:12px;color:var(--muted)}
+.plan-features{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.9;list-style:none}
+.plan-features li::before{content:'+ ';color:var(--success)}
+.pay-btn{width:100%;padding:14px;border-radius:10px;font-size:15px;font-weight:700;background:linear-gradient(135deg,#6c63ff,#9b8fff);color:white;border:none;cursor:pointer}
+.pay-methods{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;color:var(--muted);font-size:12px;flex-wrap:wrap}
+.pay-chip{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--muted)}
+.features{max-width:1080px;margin:0 auto 70px;padding:0 20px;position:relative;z-index:1}
+.features-title{text-align:center;font-family:'Playfair Display',serif;font-size:26px;margin-bottom:28px;color:var(--muted)}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:600px){.features-grid{grid-template-columns:1fr}}
+.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.feature-card h3{font-size:14px;font-weight:600;margin-bottom:6px}
+.feature-card p{font-size:13px;color:var(--muted);line-height:1.6}
+.toast{position:fixed;bottom:24px;right:24px;z-index:300;padding:11px 18px;border-radius:9px;font-weight:600;font-size:14px;transform:translateY(80px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+footer{text-align:center;padding:24px;border-top:1px solid var(--border);color:var(--muted);font-size:13px;position:relative;z-index:1}
+</style>
+</head>
+<body>
+<nav><div class="logo">CareerCraft AI</div><div class="nav-right"><div class="usage-badge" id="usageBadge">Free uses left: <span id="usageCount">3</span></div><button class="upgrade-nav" onclick="showPaywall()">Upgrade</button></div></nav>
+<div class="hero"><h1>Write your <em>story</em>,<br>land your dream job</h1><p class="hero-sub">Generate a LinkedIn bio or ATS-ready resume in 30 seconds. Built for Indian freshers.</p><div class="tool-tabs"><button class="tab-btn active" onclick="switchTool('linkedin',this)">LinkedIn Bio</button><button class="tab-btn" onclick="switchTool('resume',this)">Resume Builder</button></div></div>
+<div class="tool-container active" id="tool-linkedin"><div class="main-layout"><div class="card"><div class="card-title">Your Details</div><div class="field"><label>Your Name</label><input type="text" id="li-name" placeholder="e.g. Priya Sharma"></div><div class="field"><label>Current / Target Role</label><input type="text" id="li-role" placeholder="e.g. Fresher in Marketing"></div><div class="field"><label>Skills</label><input type="text" id="li-skills" placeholder="e.g. Python, SQL, Excel"></div><div class="field"><label>Education</label><input type="text" id="li-edu" placeholder="e.g. B.Tech CSE, 2024"></div><div class="field"><label>Achievements</label><textarea id="li-achievements" placeholder="e.g. Internship at Infosys"></textarea></div><div class="field"><label>Tone</label><select id="li-tone"><option value="professional">Professional</option><option value="friendly">Friendly</option><option value="bold">Bold</option><option value="creative">Creative</option></select></div><button class="generate-btn" id="li-gen-btn" onclick="generateLinkedIn()">Generate LinkedIn Bio</button></div><div class="card"><div class="card-title" style="display:flex;justify-content:space-between"><span>Your LinkedIn Bio</span><span id="li-char-count" style="font-size:11px;color:var(--muted)"></span></div><div class="output-box" id="li-output"><span class="output-placeholder">Your LinkedIn bio will appear here.</span></div><div class="output-actions"><button class="copy-btn" onclick="copyOutput('li-output')">Copy Bio</button><button class="download-btn" onclick="downloadText('li-output','linkedin-bio.txt')">Download</button></div></div></div></div>
+<div class="tool-container" id="tool-resume"><div class="main-layout"><div class="card"><div class="card-title">Resume Details</div><div class="field"><label>Full Name</label><input type="text" id="re-name" placeholder="e.g. Rahul Verma"></div><div class="field"><label>Email and Phone</label><input type="text" id="re-contact" placeholder="rahul@email.com | +91 98765 43210"></div><div class="field"><label>Target Role</label><input type="text" id="re-role" placeholder="e.g. Junior Data Analyst"></div><div class="field"><label>Education</label><textarea id="re-edu" placeholder="e.g. B.Com, Delhi University, 2024"></textarea></div><div class="field"><label>Skills</label><input type="text" id="re-skills" placeholder="e.g. MS Excel, Tally, Canva"></div><div class="field"><label>Internships</label><textarea id="re-exp" placeholder="e.g. Marketing Intern at Zomato"></textarea></div><div class="field"><label>Certifications</label><input type="text" id="re-certs" placeholder="e.g. Google Analytics"></div><button class="generate-btn" id="re-gen-btn" onclick="generateResume()">Generate Resume</button></div><div class="card"><div class="card-title">Your AI Resume</div><div class="output-box" id="re-output"><span class="output-placeholder">Your ATS-friendly resume will appear here.</span></div><div class="output-actions"><button class="copy-btn" onclick="copyOutput('re-output')">Copy Resume</button><button class="download-btn" onclick="downloadText('re-output','my-resume.txt')">Download</button></div></div></div></div>
+<div class="features"><div class="features-title">Why freshers love CareerCraft</div><div class="features-grid"><div class="feature-card"><h3>Ready in 30 seconds</h3><p>AI writes a professional draft instantly.</p></div><div class="feature-card"><h3>ATS-optimised</h3><p>Passes systems used by TCS, Wipro, Infosys.</p></div><div class="feature-card"><h3>Built for India</h3><p>Made for Indian freshers and recruiters.</p></div></div></div>
+<div class="paywall-overlay" id="paywallOverlay"><div class="paywall-modal"><button class="paywall-close" onclick="hidePaywall()">x</button><h2>3 free tries used</h2><p>Upgrade for unlimited access.</p><div class="plans"><div class="plan" id="plan-basic" onclick="selectPlan('basic')"><div class="plan-name">Basic</div><div class="plan-price"><sup>Rs</sup>199<span>/mo</span></div><ul class="plan-features"><li>Unlimited generations</li><li>LinkedIn Bio and Resume</li></ul></div><div class="plan popular" id="plan-pro" onclick="selectPlan('pro')"><div class="popular-tag">Most Popular</div><div class="plan-name">Pro</div><div class="plan-price"><sup>Rs</sup>499<span>/mo</span></div><ul class="plan-features"><li>Everything in Basic</li><li>PDF downloads</li></ul></div></div><button class="pay-btn" id="payBtn" onclick="alert('Razorpay coming soon!')">Pay with Razorpay</button><div class="pay-methods">Secure: <span class="pay-chip">UPI</span><span class="pay-chip">Cards</span></div></div></div>
+<div class="toast" id="toast"></div>
+<footer>2025 CareerCraft AI - Made in India</footer>
+<script>
+const MAX_FREE=3;
+let usedCount=parseInt(localStorage.getItem('cc_used')||'0');
+let isPro=localStorage.getItem('cc_pro')==='true';
+let selectedPlan='pro';
+function updateBadge(){if(isPro){document.getElementById('usageBadge').innerHTML='Pro Unlimited';}else{document.getElementById('usageBadge').innerHTML='Free uses left: <span>'+Math.max(0,MAX_FREE-usedCount)+'</span>';}}
+updateBadge();
+function switchTool(t,b){document.querySelectorAll('.tool-container').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));document.getElementById('tool-'+t).classList.add('active');b.classList.add('active');}
+function checkUsage(){if(isPro)return true;if(usedCount>=MAX_FREE){showPaywall();return false;}usedCount++;localStorage.setItem('cc_used',usedCount);updateBadge();return true;}
+async function callAI(p){const r=await fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p})});const d=await r.json();if(d.error)throw new Error(d.error);return d.text;}
+async function generateLinkedIn(){if(!checkUsage())return;const name=document.getElementById('li-name').value.trim();const role=document.getElementById('li-role').value.trim();if(!name||!role){showToast('Enter name and role.',true);return;}const tones={professional:'formal polished third-person',friendly:'warm approachable first person',bold:'bold ambitious first person',creative:'creative unique'};const prompt='Write LinkedIn About section. Name:'+name+' Role:'+role+' Skills:'+document.getElementById('li-skills').value+' Education:'+document.getElementById('li-edu').value+' Achievements:'+document.getElementById('li-achievements').value+' Tone:'+tones[document.getElementById('li-tone').value]+'. 150-220 words, hook opening, end with CTA, no bullets, flowing paragraphs. Only bio text.';setLoading('li-gen-btn','li-output',true);try{const t=await callAI(prompt);document.getElementById('li-output').textContent=t;document.getElementById('li-char-count').textContent=t.length+' chars';}catch(e){document.getElementById('li-output').textContent='Error: '+e.message;}setLoading('li-gen-btn','li-output',false,'Generate LinkedIn Bio');}
+async function generateResume(){if(!checkUsage())return;const name=document.getElementById('re-name').value.trim();const role=document.getElementById('re-role').value.trim();if(!name||!role){showToast('Enter name and role.',true);return;}const prompt='ATS resume for Indian fresher. Name:'+name+' Contact:'+document.getElementById('re-contact').value+' Role:'+role+' Education:'+document.getElementById('re-edu').value+' Skills:'+document.getElementById('re-skills').value+' Experience:'+document.getElementById('re-exp').value+' Certs:'+document.getElementById('re-certs').value+'. Sections: OBJECTIVE, EDUCATION, SKILLS, EXPERIENCE, CERTIFICATIONS with dash dividers. Only the resume text.';setLoading('re-gen-btn','re-output',true);try{const t=await callAI(prompt);document.getElementById('re-output').textContent=t;}catch(e){document.getElementById('re-output').textContent='Error: '+e.message;}setLoading('re-gen-btn','re-output',false,'Generate Resume');}
+function setLoading(b,o,l,t){const btn=document.getElementById(b);btn.disabled=l;if(l){btn.innerHTML='<div class="loading-dots"><span></span><span></span><span></span></div>';document.getElementById(o).innerHTML='<span style="color:var(--muted)">Generating...</span>';}else{btn.innerHTML=t;}}
+function copyOutput(id){const t=document.getElementById(id).textContent;if(t.includes('will appear')){showToast('Generate first!',true);return;}navigator.clipboard.writeText(t);showToast('Copied!');}
+function downloadText(id,fn){const t=document.getElementById(id).textContent;if(t.includes('will appear')){showToast('Generate first!',true);return;}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/plain'}));a.download=fn;a.click();}
+function showPaywall(){document.getElementById('paywallOverlay').classList.add('show');}
+function hidePaywall(){document.getElementById('paywallOverlay').classList.remove('show');}
+function selectPlan(p){selectedPlan=p;['basic','pro'].forEach(x=>document.getElementById('plan-'+x).style.borderColor=x===p?'#6c63ff':'#2a2a3a');}
+function showToast(m,e){const t=document.getElementById('toast');t.textContent=m;t.style.background=e?'#ff6584':'#4ade80';t.style.color=e?'white':'#052e10';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+document.getElementById('paywallOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('paywallOverlay'))hidePaywall();});
 </script>
 </body>
 </html>
